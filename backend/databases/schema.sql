@@ -217,14 +217,13 @@ INSERT INTO affectations (utilisateur_id, equipement_id, date_affectation) VALUE
 (29, 29, '2023-02-26'),
 (30, 30, '2023-02-27');
 
--- 🚨 Incidents
+-- Incidents
 INSERT INTO incidents (equipement_id, description, statut, gravite) VALUES
 (1, 'Écran noir au démarrage', 'ouvert', 'moyen'),
 (2, 'Bourrage papier', 'résolu', 'faible'),
 (3, 'Connexion réseau instable', 'ouvert', 'élevé'),
 (4, 'Erreur RAID', 'ouvert', 'critique'),
 (5, 'Routeur reboot tout seul', 'résolu', 'moyen'),
--- ... jusqu'à 30 incidents similaires :
 (6, 'Batterie faible', 'ouvert', 'faible'),
 (7, 'Impossible d’imprimer', 'ouvert', 'moyen'),
 (8, 'Défaut d’alimentation', 'résolu', 'élevé'),

@@ -1,5 +1,10 @@
 const { Sequelize } = require('sequelize');
-const sequelize = new Sequelize(process.env.DB_CONNECTION_STRING);
+
+const sequelize = new Sequelize("assetium", "root", "", {
+  host: "localhost",
+  dialect: "mysql",
+  port: 3306
+});
 
 const Role = require('./role.model')(sequelize);
 const Utilisateur = require('./utilisateur.model')(sequelize);

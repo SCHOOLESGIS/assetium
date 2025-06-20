@@ -1,3 +1,4 @@
+const initDB = require('./databases/init-db');
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
@@ -24,6 +25,8 @@ app.use('/api/affectations', affectationRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/maintenances', maintenanceRoutes);
 app.use('/api/statistiques', statistiqueRoutes);
+
+initDB()
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

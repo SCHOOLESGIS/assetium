@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { Utilisateur } = require('../model'); // ton modèle Sequelize
+const { Utilisateur } = require('../models'); // ton modèle Sequelize
 
 // GET tous les utilisateurs
 router.get('/', async (req, res) => {
