@@ -19,7 +19,9 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     )
 
-    res.json({ token })
+    const user_to_return = {nom: user.nom, email: user.email};
+
+    res.json({ user: user_to_return, token })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }

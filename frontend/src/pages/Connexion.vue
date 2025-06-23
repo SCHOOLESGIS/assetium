@@ -1,6 +1,6 @@
 <template>
     <div class="flex items-center justify-center gap-2 w-full h-screen">
-        <div class="p-1 w-[175px] rounded-full flex gap-1 items-center absolute top-1 left-1">
+        <div class="p-1 w-[175px] rounded-full flex gap-1 items-center absolute top-1 left-3">
             <div class="h-[25px] w-[25px] rounded-full bg-black flex items-center justify-center">
                 <img src="../../public/assetium-white.png" alt="" class="w-8">
             </div>
@@ -14,7 +14,7 @@
             </div>
             <div class="mb-2 flex flex-col items-center justify-center">
                 <h2 class="text-2xl font-semibold mb-3">Se connecter</h2>
-                <div class="text-sm">Saisissez les informations suivantes pour vous connecter.</div>
+                <div class="text-sm text-center">Saisissez les informations suivantes pour vous connecter.</div>
             </div>
 
             <form @submit.prevent="onLogin" class="flex flex-col gap-2 lg:w-[75%] w-[90%]">
