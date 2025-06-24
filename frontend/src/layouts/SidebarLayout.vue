@@ -21,21 +21,21 @@
                             </div>
                         </div>
                         <div class="">
-                            <div class="text-md font-semibold">John Doe</div>
-                            <small class="text-xs text-slate-400">Technicien</small>
+                            <div class="text-md font-semibold">{{ user.nom }}</div>
+                            <small class="text-xs text-slate-400">{{ user.role }}</small>
                         </div>
                     </div>
                 </div>
 
                 <ul class="">
-                    <li v-for="nav in navigations" :key="nav['icon']" class="mb-[24px] text-[12px] font-semibold flex justify-between">
-                        <div class="flex gap-5"><div class="text-[18px] font-bold text-blue-500"><i :class="nav['icon']"></i></div> <div class="">{{ nav['title'] }}</div></div>
+                    <li v-for="nav in navigations" :key="nav['icon']" class="mb-[24px] text-[12px] font-semibold flex justify-between duration-500 hover:bg-blue-200 px-[5px] py-[1px] rounded cursor-pointer" @click="navigateTo(nav['link'])">
+                        <div class="flex gap-5"><div class="text-[18px] font-bold text-blue-500"><i :class="nav['icon']"></i></div> <div class="">{{ nav['title'] }}</div></div> <div v-if="nav['count']" class="p-1 rounded-full text-blue-500 bg-blue-500/10">{{nav['count']}}</div>
                     </li>
                 </ul>
             </div>
         </div>
         <div class="w-[calc(100%-300px)] min-h-screen">
-            <div class="h-[90px] border-b border-slate-300/70 flex items-center justify-between px-3">
+            <div class="h-[90px] border-b border-slate-300/70 flex items-center justify-between px-3 sticky top-0">
                 <div class=""></div>
                 <div class="flex gap-1">
                     <div class="p-1 rounded-full flex gap-4 items-center">
@@ -62,49 +62,73 @@
 </template>
 
 <script setup>
-    import { ref } from 'vue';
+    import { ref, onMounted } from 'vue';
+    import {useRouter} from 'vue-router';
+    const router = useRouter();
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+    console.log('RDFGHTTTHTHYY'+ user);
+
     const navigations = ref([
+        {
+            icon: "fi fi-rr-curve-arrow",
+            title: "Tableaux de bord",
+            link: "/dashboard",
+        },
         {
             icon: "fi fi-rr-tool-box",
             title: "Equipements",
-            link: ""
+            link: "/equipements",
+            count: 3
         },
         {
             icon: "fi fi-rr-comment-alt-dots",
             title: "Messages",
-            link: ""
+            link: "/messages",
+            count: 3
         },
         {
             icon: "fi fi-rr-triangle-warning",
             title: "Incidents",
-            link: ""
+            link: "/incidents",
+            count: 100
         },
         {
             icon: "fi fi-rr-users-alt",
             title: "Utilisateurs",
-            link: ""
+            link: "/utilisateurs",
+            count: 26579
         },
         {
             icon: "fi fi-rr-assign",
             title: "Affectations",
-            link: ""
+            link: "/affectations",
+            count: 1
         },
         {
             icon: "fi fi-rr-rectangle-vertical-history",
             title: "Historiques",
-            link: ""
+            link: "/historique"
         },
         {
             icon: "fi fi-rr-user-headset",
             title: "Supports",
-            link: ""
+            link: "/support"
         },
         {
             icon: "fi fi-rr-gears",
             title: "Paramètres",
-            link: ""
+            link: "/parametres"
         },
     ]);
+
+    function navigateTo(url) {
+        router.push(url);
+    }
+
+    onMounted(() => {
+
+    })
 </script>
 
 <style scoped>

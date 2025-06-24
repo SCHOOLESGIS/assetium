@@ -14,12 +14,14 @@ export const useLoginStore = defineStore('login',  () => {
                     mot_de_passe: credentials.password,
                 }
             );
-            console.log('try, ', response.data.user.email)
+            console.log('try, ', response.data)
             userInfos.value = response.data
             if (response.data.user.email == credentials.email) {
-                console.log('router, ', response.data.user.email)
+                console.log('router, ', response.data)
                 token.value = userInfos.token
-                localStorage.setItem('token', token);
+                localStorage.setItem('token', response.data.token);
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+                console.log(response.data.user)
                 return true
             }
     

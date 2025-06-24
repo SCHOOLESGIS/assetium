@@ -1,42 +1,16 @@
 <template>
     <SidebarLayout>
-        <div class="text-3xl font-bold mb-4">Tableau de bord</div>
-        <div class="w-full flex gap-3 flex-wrap mb-3">
+        <div class="text-3xl font-bold">Tableau de bord</div>
+        <small class="mb-3 text-sm">Statistiques des activités du système.</small>
+        <div class="w-full flex gap-3 flex-wrap mb-3 mt-3">
             <div class="w-[300px] min-h-[100px] flex flex-wrap gap-3 grow">
-                <div class="w-[200px] min-h-[125px] bg-white grow rounded shadow relative flex items-center p-3">
+                <div v-for="entity in entities" class="w-[200px] min-h-[125px] bg-white grow rounded shadow relative flex items-center p-3">
                     <div class="flex flex-col gap-4">
-                        <div class="text-3xl font-bold">45</div>
-                        <div class="text-slate-500">Equipements</div>
+                        <div class="text-3xl font-bold">{{entity['number']}}</div>
+                        <div class="text-slate-500">{{entity['name']}}</div>
                     </div>
-                    <div class="absolute top-3 right-4 text-xl text-indigo-500">
-                        <i class="fi fi-rr-computer"></i>
-                    </div>
-                </div>
-                <div class="w-[200px] min-h-[125px] bg-white grow rounded shadow relative flex items-center p-3">
-                    <div class="flex flex-col gap-4">
-                        <div class="text-3xl font-bold">22</div>
-                        <div class="text-slate-500">Incidents</div>
-                    </div>
-                    <div class="absolute top-3 right-4 text-xl text-amber-500">
-                        <i class="fi fi-rr-triangle-warning"></i>
-                    </div>
-                </div>
-                <div class="w-[200px] min-h-[125px] bg-white grow rounded shadow relative flex items-center p-3">
-                    <div class="flex flex-col gap-4">
-                        <div class="text-3xl font-bold">6</div>
-                        <div class="text-slate-500">Affectations</div>
-                    </div>
-                    <div class="absolute top-3 right-4 text-xl text-green-500">
-                        <i class="fi fi-rr-assign"></i>
-                    </div>
-                </div>
-                <div class="w-[200px] min-h-[125px] bg-white grow rounded shadow relative flex items-center p-3">
-                    <div class="flex flex-col gap-4">
-                        <div class="text-3xl font-bold">11</div>
-                        <div class="text-slate-500">Utilisateurs</div>
-                    </div>
-                    <div class="absolute top-3 right-4 text-xl text-blue-500">
-                        <i class="fi fi-rr-user"></i>
+                    <div class="absolute top-6 right-4 text-xl" :class="entity['class']">
+                        <i :class="entity['icon']"></i>
                     </div>
                 </div>
             </div>
@@ -45,20 +19,20 @@
             </div>
         </div>
         <div class="flex min-h-[250px] gap-3">
-            <div class="w-[400px] max-h-[400px] px-2 py-4 bg-white rounded shadow flex flex-col items-start justify-center">
-                <div class="text-lg text-slate-500">Nombres d'incidents par priorités.</div>
+            <div class="w-[400px] max-h-[400px] px-2 py-6 bg-white rounded shadow flex flex-col items-center justify-center">
+                <div class="text-md text-center w-full">Nombres d'incidents par priorités.</div>
                 <canvas id="myChart2"></canvas>
             </div>
             <div class="w-[calc(100%-400px)] max-h-[400px]">
                 <div class="w-full h-full bg-white rounded shadow p-2 flex flex-col gap-2">
                     <div class="w-full px-1 p-2 flex items-center justify-between border-slate-200 h-[50px] rounded">
                         <div class="text-sm text-center text-gray-600">Evolution des entités</div>
-                        <button @click="byEntity('equipements')" class="button cursor-pointer hover:text-blue-500 duration-300 py-1 px-6 bg-white border border-slate-200 rounded flex items-center justify-center">Equipements</button>
+                        <button @click="byEntity('equipements')" class="text-blue-500 button cursor-pointer hover:text-blue-500 duration-300 py-1 px-6 bg-white border border-slate-200 rounded flex items-center justify-center">Equipements</button>
                         <button @click="byEntity('utilisateurs')" class="button cursor-pointer hover:text-blue-500 duration-300 py-1 px-6 bg-white border border-slate-200 rounded flex items-center justify-center">Utilisateurs</button>
                         <button @click="byEntity('incidents')" class="button cursor-pointer hover:text-blue-500 duration-300 py-1 px-6 bg-white border border-slate-200 rounded flex items-center justify-center">Incidents</button>
                         <button @click="byEntity('affectations')" class="button cursor-pointer hover:text-blue-500 duration-300 py-1 px-6 bg-white border border-slate-200 rounded flex items-center justify-center">Affectations</button>
                     </div>
-                    <div class="w-full h-[calc(100%-50px)] border border-slate-200 rounded px-2 py-1">
+                    <div class="w-full h-[calc(100%-50px)] border border-slate-200 rounded px-2 py-1 flex items-center justify-center">
                         <canvas v-show="showByEntity == 'equipements'" id="byEquipement"></canvas>
                         <canvas v-show="showByEntity == 'utilisateurs'" id="byUtilisateur"></canvas>
                         <canvas v-show="showByEntity == 'incidents'" id="byIncident"></canvas>
@@ -74,6 +48,33 @@
     import { onMounted, ref } from 'vue';
     import SidebarLayout from '../layouts/SidebarLayout.vue';
     const showByEntity = ref("incidents");
+
+    const entities = [
+        {
+            "number": 45,
+            "name": "Equipments",
+            "icon": "fi fi-rr-computer",
+            "class": "text-indigo-500 py-2 px-3 border rounded bg-indigo-500/10"
+        },
+        {
+            "number": 22,
+            "name": "Incidents",
+            "icon": "fi fi-rr-triangle-warning",
+            "class": "text-amber-500 py-2 px-3 border rounded bg-amber-500/10"
+        },
+        {
+            "number": 6,
+            "name": "Affectations",
+            "icon": "fi fi-rr-assign",
+            "class": "text-green-500 py-2 px-3 border rounded bg-green-500/10"
+        },
+        {
+            "number": 11,
+            "name": "Utilisateurs",
+            "icon": "fi fi-rr-user",
+            "class": "text-red-500 py-2 px-3 border rounded bg-red-500/10"
+        },
+    ];
 
     function byEntity (entity) {
         showByEntity.value = entity;

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Dashboard from '@/pages/Dashboard.vue'
 import Equipements from '@/pages/Equipements.vue'
+import Messages from '@/pages/Messages.vue'
 import Affectations from '@/pages/Affectations.vue'
 import Incidents from '@/pages/Incidents.vue'
 import Statistiques from '@/pages/Statistiques.vue'
@@ -22,6 +23,11 @@ const routes = [
     name: 'dashboard',
     component: Dashboard
   },
+    {
+      path: '/messages',
+      name: 'messages',
+      component: Messages
+    },
   {
     path: '/equipements',
     name: 'equipements',
