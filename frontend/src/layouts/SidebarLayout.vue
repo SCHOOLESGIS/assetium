@@ -28,7 +28,7 @@
                 </div>
 
                 <ul class="">
-                    <li v-for="nav in navigations" :key="nav['icon']" class="mb-[24px] text-[12px] font-semibold flex justify-between duration-500 hover:bg-blue-200 px-[5px] py-[1px] rounded cursor-pointer" @click="navigateTo(nav['link'])">
+                    <li v-for="nav in navigations" :key="nav['icon']" class="mb-[18px] text-[12px] font-semibold flex justify-between duration-500 hover:bg-blue-200 px-[5px] py-[4px] rounded cursor-pointer" @click="navigateTo(nav['link'])">
                         <div class="flex gap-5"><div class="text-[18px] font-bold text-blue-500"><i :class="nav['icon']"></i></div> <div class="">{{ nav['title'] }}</div></div> <div v-if="nav['count']" class="p-1 rounded-full text-blue-500 bg-blue-500/10">{{nav['count']}}</div>
                     </li>
                 </ul>
@@ -97,7 +97,7 @@
             icon: "fi fi-rr-users-alt",
             title: "Utilisateurs",
             link: "/utilisateurs",
-            count: 26579
+            count: 279
         },
         {
             icon: "fi fi-rr-assign",
