@@ -12,7 +12,7 @@
       {{ search }}
       <div class="flex gap-2">
         <button class="bg-white text-blue-500 hover:text-blue-600 duration-300 border border-blue-500 rounded py-1 px-2 cursor-pointer"><i class="fi fi-rr-bars-filter"></i> Filtrer</button>
-        <button class="bg-blue-500 hover:bg-blue-600 duration-300 text-white rounded py-1 px-2 cursor-pointer"><i class="fi fi-rr-file-export"></i> Exporter</button>
+        <button class="bg-blue-500 hover:bg-blue-600 duration-300 text-white rounded py-1 px-2 cursor-pointer">Exporter <i class="fi fi-rr-angle-small-down"></i></button>
         <button v-if="checkbox" class="bg-red-500 hover:bg-blue-600 duration-300 text-white rounded py-1 px-2 cursor-pointer" @click="deleteAllEquipements()"><i class="fi fi-rr-trash"></i> Delete all</button>
       </div>
     </div>
@@ -29,8 +29,8 @@
               </th>
             </tr>
           </thead>
-          <tbody v-if="equipements?.data?.length">
-            <tr v-for="equipement in equipements.data" :key="equipement.id" class="hover:bg-gray-200/50">
+          <tbody v-if="filteredEquipements.length">
+            <tr v-for="equipement in filteredEquipements" :key="equipement.id" class="hover:bg-gray-200/50">
               <td class="px-2 py-3 text-start">
                 <input type="checkbox" v-model="checkbox"/>
               </td>
@@ -196,11 +196,13 @@
       equipements.value = equipementStore.equipements;
     }
 
-    computed(() => {
-      return equipements.value.data.filter(equipement => {
-        console.log(equipement.nom)
-
-        equipement.nom.toLowerCase().includes(search.value.toLowerCase());
-      })
-    })
+    const filteredEquipements = computed(() => {
+      if (!search.value) return equipements.value.data;
+      return equipements.value.data.filter(equipement =>
+        equipement.nom?.toLowerCase().includes(search.value.toLowerCase()) ||
+        equipement.marque?.toLowerCase().includes(search.value.toLowerCase()) ||
+        equipement.modele?.toLowerCase().includes(search.value.toLowerCase()) ||
+        equipement.numero_serie?.toLowerCase().includes(search.value.toLowerCase())
+      );
+    });
 </script>
