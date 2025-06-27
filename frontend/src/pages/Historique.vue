@@ -1,12 +1,12 @@
 <template>
-    <div>
+    <SidebarLayout>
         9. 🗂️ Historique global
         Journal des actions (logs utilisateurs, affectations, incidents, etc.)
-    </div>
+    </SidebarLayout>
 </template>
 
 <script setup>
-    
+    import SidebarLayout from '../layouts/SidebarLayout.vue';
 </script>
 
 <style>

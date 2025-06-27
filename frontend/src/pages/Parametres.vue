@@ -1,14 +1,14 @@
 <template>
-    <div>
+    <SidebarLayout>
         8. 🗃️ Paramètres & Configuration
         Configuration des catégories, statuts, alertes
 
         Paramètres système, notifications, sécurité
-    </div>
+    </SidebarLayout>
 </template>
 
 <script setup>
-    
+    import SidebarLayout from '../layouts/SidebarLayout.vue';
 </script>
 
 <style>

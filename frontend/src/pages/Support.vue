@@ -1,14 +1,14 @@
 <template>
-    <div>
+    <SidebarLayout>
         10. 📞 Support / Aide (optionnel mais pro)
         Section de documentation utilisateur
 
         Contact, FAQ, tutoriels
-    </div>
+    </SidebarLayout>
 </template>
 
 <script setup>
-    
+    import SidebarLayout from '../layouts/SidebarLayout.vue';
 </script>
 
 <style>

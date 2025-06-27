@@ -3,8 +3,28 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const app = express();
+require('dotenv').config()
 
-app.use(cors());
+const authRoute = require('./routes/auth.route')
+const verifyToken = require('./middlewares/jwt')
+
+const whitelist = ['http://localhost:5173'];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // Autorise les requêtes sans origine (ex: postman)
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}; 
+
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -17,14 +37,16 @@ const incidentRoutes = require('./routes/incident.routes');
 const maintenanceRoutes = require('./routes/maintenance.routes');
 const statistiqueRoutes = require('./routes/statistique.routes');
 
-app.use('/api/roles', roleRoutes);
-app.use('/api/utilisateurs', utilisateurRoutes);
-app.use('/api/types-equipements', typeEquipementRoutes);
-app.use('/api/equipements', equipementRoutes);
-app.use('/api/affectations', affectationRoutes);
-app.use('/api/incidents', incidentRoutes);
-app.use('/api/maintenances', maintenanceRoutes);
-app.use('/api/statistiques', statistiqueRoutes);
+
+app.use('/api/auth', authRoute)
+app.use('/api/roles',verifyToken, roleRoutes);
+app.use('/api/utilisateurs',verifyToken, utilisateurRoutes);
+app.use('/api/types-equipements',verifyToken, typeEquipementRoutes);
+app.use('/api/equipements',verifyToken, equipementRoutes);
+app.use('/api/affectations',verifyToken, affectationRoutes);
+app.use('/api/incidents',verifyToken, incidentRoutes);
+app.use('/api/maintenances',verifyToken, maintenanceRoutes);
+app.use('/api/statistiques',verifyToken, statistiqueRoutes);
 
 initDB()
 

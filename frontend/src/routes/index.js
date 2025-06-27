@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Dashboard from '@/pages/Dashboard.vue'
 import Equipements from '@/pages/Equipements.vue'
+import Messages from '@/pages/Messages.vue'
 import Affectations from '@/pages/Affectations.vue'
 import Incidents from '@/pages/Incidents.vue'
 import Statistiques from '@/pages/Statistiques.vue'
@@ -10,6 +11,7 @@ import Parametres from '@/pages/Parametres.vue'
 import Historique from '@/pages/Historique.vue'
 import Support from '@/pages/Support.vue'
 import Connexion from '@/pages/Connexion.vue'
+import { isAuthenticated } from '../middlewares/IsAuthenticated.middleware'
 
 const routes = [
   {
@@ -22,6 +24,11 @@ const routes = [
     name: 'dashboard',
     component: Dashboard
   },
+    {
+      path: '/messages',
+      name: 'messages',
+      component: Messages
+    },
   {
     path: '/equipements',
     name: 'equipements',
@@ -67,6 +74,10 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
+})
+
+router.afterEach(function (to, from, next) {
+  isAuthenticated(to, from, next);
 })
 
 export default router
