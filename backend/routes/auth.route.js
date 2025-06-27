@@ -27,4 +27,10 @@ router.post('/login', async (req, res) => {
   }
 })
 
+router.delete('/logout', (req, res) => {
+  res.json({
+    message: "Déconnexion réussie!"
+  })
+})
+
 module.exports = router

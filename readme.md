@@ -67,3 +67,12 @@
 
 #### npm install
 #### npm run dev
+
+## Demo
+
+#### Dashboard
+<img src="demos/dashboard.png" />
+
+#### Equipements
+<img src="demos/equipements.png" />
+

@@ -22,6 +22,7 @@ export const useLoginStore = defineStore('login',  () => {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data.user));
                 console.log(response.data.user)
+                await getCurrentUser();
                 return true
             }
     
@@ -40,5 +41,30 @@ export const useLoginStore = defineStore('login',  () => {
         return false
     }
 
-    return {login}
+    const logout = async () => {
+        const response = await axios.delete(
+            `${import.meta.env.VITE_API_URL}auth/logout`,
+        );
+
+        localStorage.removeItem('currentUser')
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        return response;
+    }
+
+    const getCurrentUser = async () => {
+        const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}utilisateurs/get-current-user`, 
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            }
+        );
+
+        localStorage.setItem('currentUser', JSON.stringify(response.data));
+        return response.data;
+    }
+
+    return {login, logout, getCurrentUser}
 });

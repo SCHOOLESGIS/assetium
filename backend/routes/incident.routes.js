@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { Incident } = require('../models');
+const { Incident, Equipement } = require('../models');
 
 // GET all incidents
 router.get('/', async (req, res) => {
   try {
-    const incidents = await Incident.findAll();
+    const incidents = await Incident.findAll({include: {model: Equipement, attributes: ['nom']}});
     res.json(incidents);
   } catch (error) {
     res.status(500).json({ message: error.message });

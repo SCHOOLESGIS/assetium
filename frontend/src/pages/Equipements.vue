@@ -9,10 +9,33 @@
           <i class="fi fi-rr-search"></i>
         </div>
       </div>
-      {{ search }}
-      <div class="flex gap-2">
-        <button class="bg-white text-blue-500 hover:text-blue-600 duration-300 border border-blue-500 rounded py-1 px-2 cursor-pointer"><i class="fi fi-rr-bars-filter"></i> Filtrer</button>
-        <button class="bg-blue-500 hover:bg-blue-600 duration-300 text-white rounded py-1 px-2 cursor-pointer">Exporter <i class="fi fi-rr-angle-small-down"></i></button>
+      <div class="flex gap-2 relative">
+        <div v-if="showDateFilter" class="mt-3 bg-white p-3 rounded shadow-2xl flex flex-col gap-3 items-end absolute z-10 right-0 top-[30px] w-[200px]">
+          <div class="flex flex-col w-full items-start">
+            <label class="text-sm text-gray-600 mb-1">Date min</label>
+            <input type="date" v-model="dateMin" class="border  rounded px-2 py-1 text-sm w-full" />
+          </div>
+          <div class="flex flex-col w-full items-start">
+            <label class="text-sm text-gray-600 mb-1">Date max</label>
+            <input type="date" v-model="dateMax" class="border rounded px-2 py-1 text-sm w-full" />
+          </div>
+          <div class="flex gap-2 w-full">
+            <button @click="resetDateFilter" class="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400 text-sm w-full">
+              Réinitialiser
+            </button>
+          </div>
+        </div>
+        <button @click="showDateFilter = !showDateFilter" class="bg-white text-blue-500 hover:text-blue-600 duration-300 border border-blue-500 rounded py-1 px-2 cursor-pointer relative">
+          <i class="fi fi-rr-bars-filter"></i> Filtrer
+        </button>
+        <button class="bg-blue-500 hover:bg-blue-600 duration-300 text-white rounded py-1 px-2 cursor-pointer relative group">
+          Exporter <i class="fi fi-rr-angle-small-down"></i> 
+          <div class="absolute top-[35px] right-0 w-[150px] h-[100px] bg-white rounded shadow-xl z-10 border border-slate-200 p-2 hidden group-hover:block duration-300">
+            <button @click="exportToExcel()" class="text-green-500 h-[40px] w-full bg-green-200 rounded cursor-pointer hover:bg-green-300 duration-300 mb-1"><i class="fi fi-rr-file-excel"></i> Excel</button>
+            <button @click="exportToCSV()" class="text-blue-500 h-[40px] w-full bg-blue-200 rounded cursor-pointer hover:bg-blue-300 duration-300"><i class="fi fi-rr-file-csv"></i>CSV</button>
+          </div>
+        </button>
+        <button class="bg-amber-500 hover:bg-amber-600 duration-300 text-white rounded py-1 px-2 cursor-pointer" @click="createEquipement()"><i class="fi fi-rr-add"></i> Ajouter</button>
         <button v-if="checkbox" class="bg-red-500 hover:bg-blue-600 duration-300 text-white rounded py-1 px-2 cursor-pointer" @click="deleteAllEquipements()"><i class="fi fi-rr-trash"></i> Delete all</button>
       </div>
     </div>
@@ -51,7 +74,7 @@
                     <div class="absolute p-1 w-[125px] duration-500 bg-white z-[100] rounded shadow-2xl bottom-[10px] right-3 group-hover:block hidden" :data-serie="equipement.numero_serie">
                         <ul class="w-full">
                             <li class="mb-2 w-full"><button @click="deleteEquipement(equipement.id)" class="w-full p-1 rounded cursor-pointer bg-red-100/50 hover:bg-red-200 duration-300 text-red-500 flex items-center justify-between gap-2"><span>Supprimer</span> <i class="fi fi-rr-delete"></i></button></li>
-                            <li class="w-full"><button class="w-full p-1 rounded cursor-pointer bg-blue-100/50 hover:bg-blue-200 duration-300 text-blue-500 flex items-center justify-between gap-2"><span>Mettre à jour</span> <i class="fi fi-rr-edit"></i></button></li>
+                            <li class="w-full"><button @click="updateEquipement(equipement)" class="w-full p-1 rounded cursor-pointer bg-blue-100/50 hover:bg-blue-200 duration-300 text-blue-500 flex items-center justify-between gap-2"><span>Mettre à jour</span> <i class="fi fi-rr-edit"></i></button></li>
                         </ul>
                     </div>
                 </button>
@@ -73,10 +96,18 @@
     import { onMounted, ref, watch, computed } from 'vue'
     import SidebarLayout from '../layouts/SidebarLayout.vue'
     import { useEquipementStore } from '../stores/equipements'
+    import { useTypeEquipementStore } from '../stores/typeEquipements'
     import Swal from 'sweetalert2';
+    import * as XLSX from 'xlsx';
+    import { saveAs } from 'file-saver';
+    const showDateFilter = ref(false)
+    const dateMin = ref('')
+    const dateMax = ref('')
     
     const equipementStore = useEquipementStore()
+    const typeEquipementStore = useTypeEquipementStore()
     const equipements = ref({ data: [] })
+    const typeEquipements = ref({ data: [] })
     const checkbox = ref(false);
     const search = ref(null);
 
@@ -90,6 +121,225 @@
     { name: "Type d'Équipement" },
     { name: "Action" }
     ])
+
+    async function createEquipement() {
+      const optionsTypeEquipement = typeEquipements.value.map(type => {
+        return `<option value="${type.id}">${type.libelle}</option>`;
+      }).join('');
+      const { value: formValues } = await Swal.fire({
+        title: '<div class="text-2xl font-semibold text-gray-800">Ajouter un équipement</div>',
+        html: `
+          <div class="flex flex-col gap-2 text-left text-sm text-gray-700">
+            <div class="text-sm text-gray-500 mb-4 w-full text-center">
+              Veuillez modifier les champs ci-dessous puis valider.
+            </div>
+            <div>
+              <label for="swal-nom" class="mb-1 block font-medium">Nom</label>
+              <input id="swal-nom" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nom" required>
+            </div>
+            <div>
+              <label for="swal-marque" class="mb-1 block font-medium">Marque</label>
+              <input id="swal-marque" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Marque"" required>
+            </div>
+            <div>
+              <label for="swal-modele" class="mb-1 block font-medium">Modèle</label>
+              <input id="swal-modele" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Modèle" required>
+            </div>
+            <div>
+              <label for="swal-numero" class="mb-1 block font-medium">Numéro de série</label>
+              <input id="swal-numero" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Numéro de série" required>
+            </div>
+            <div>
+              <label for="swal-date" class="mb-1 block font-medium">Date d'acquisition</label>
+              <input id="swal-date" type="date" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+            </div>
+            <div>
+              <label for="swal-etat" class="mb-1 block font-medium">État</label>
+              <select id="swal-etat" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <option value="en service">En service</option>
+                <option value="en panne">En panne</option>
+                <option value="maintenance">Maintenance</option>
+              </select>
+            </div>
+            <div>
+              <label for="swal-etat" class="mb-1 block font-medium">Type d'équipements</label>
+              <select id="swal-type" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                ${optionsTypeEquipement}
+              </select>
+            </div>
+          </div>
+        `,
+        buttonsStyling: false,
+        customClass: {
+          popup: 'rounded-xl shadow-lg border border-gray-200 px-6 py-4',
+          confirmButton: 'bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 cursor-pointer',
+          cancelButton: 'bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 cursor-pointer'
+        },
+        didRender: () => {
+          const actions = document.querySelector('.swal2-actions');
+          if (actions) {
+            actions.classList.add('flex', 'justify-between', 'w-full', 'gap-[50px]', 'mt-4');
+          }
+        },
+        showCancelButton: true,
+        focusConfirm: false,
+        confirmButtonText: '<i class="fi fi-rr-add"></i> Ajouter',
+        cancelButtonText: '<i class="fi fi-rr-time-delete"></i> Annuler',
+          
+        preConfirm: () => {
+          const nom = document.getElementById('swal-nom').value.trim();
+          const marque = document.getElementById('swal-marque').value.trim();
+          const modele = document.getElementById('swal-modele').value.trim();
+          const numero_serie = document.getElementById('swal-numero').value.trim();
+          const date_acquisition = document.getElementById('swal-date').value;
+          const etat = document.getElementById('swal-etat').value;
+          const type_id = document.getElementById('swal-type').value;
+
+          if (!nom) {
+            Swal.showValidationMessage('Le champ "Nom" est requis.');
+            return false;
+          }
+          if (!marque) {
+            Swal.showValidationMessage('Le champ "Marque" est requis.');
+            return false;
+          }
+          if (!modele) {
+            Swal.showValidationMessage('Le champ "Modèle" est requis.');
+            return false;
+          }
+          if (!numero_serie) {
+            Swal.showValidationMessage('Le champ "Numéro de série" est requis.');
+            return false;
+          }
+          if (!date_acquisition) {
+            Swal.showValidationMessage("La date d'acquisition est requise.");
+            return false;
+          }
+          if (!etat) {
+            Swal.showValidationMessage("Le champ État est requis.");
+            return false;
+          }
+          if (!type_id) {
+            Swal.showValidationMessage("Le champ Type est requis.");
+            return false;
+          }
+          return {
+            nom,
+            marque,
+            modele,
+            numero_serie,
+            date_acquisition,
+            etat,
+            type_id
+          };
+        }
+      });
+
+      if (formValues) {
+        await equipementStore.createEquipement(formValues);
+        await loadEquipements();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Ajout réussie',
+          text: 'Les informations ont été enregistrées.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    }
+
+    async function updateEquipement(equipement) {
+      const optionsTypeEquipement = typeEquipements.value.map(type => {
+        const selected = equipement.type_id === type.id ? 'selected' : '';
+        return `<option value="${type.id}" ${selected}>${type.libelle}</option>`;
+      }).join('');
+      const { value: formValues } = await Swal.fire({
+        title: '<div class="text-2xl font-semibold text-gray-800">Mettre à jour l’équipement</div>',
+        html: `
+          <div class="flex flex-col gap-2 text-left text-sm text-gray-700">
+            <div class="text-sm text-gray-500 mb-4 w-full text-center">
+              Veuillez modifier les champs ci-dessous puis valider.
+            </div>
+            <div>
+              <label for="swal-nom" class="mb-1 block font-medium">Nom</label>
+              <input id="swal-nom" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Nom" value="${equipement.nom || ''}">
+            </div>
+            <div>
+              <label for="swal-marque" class="mb-1 block font-medium">Marque</label>
+              <input id="swal-marque" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Marque" value="${equipement.marque || ''}">
+            </div>
+            <div>
+              <label for="swal-modele" class="mb-1 block font-medium">Modèle</label>
+              <input id="swal-modele" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Modèle" value="${equipement.modele || ''}">
+            </div>
+            <div>
+              <label for="swal-numero" class="mb-1 block font-medium">Numéro de série</label>
+              <input id="swal-numero" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Numéro de série" value="${equipement.numero_serie || ''}">
+            </div>
+            <div>
+              <label for="swal-date" class="mb-1 block font-medium">Date d'acquisition</label>
+              <input id="swal-date" type="date" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" value="${equipement.date_acquisition || ''}">
+            </div>
+            <div>
+              <label for="swal-etat" class="mb-1 block font-medium">État</label>
+              <select id="swal-etat" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <option value="en service" ${equipement.etat === 'en service' ? 'selected' : ''}>En service</option>
+                <option value="en panne" ${equipement.etat === 'en panne' ? 'selected' : ''}>En panne</option>
+                <option value="maintenance" ${equipement.etat === 'maintenance' ? 'selected' : ''}>Maintenance</option>
+              </select>
+            </div>
+            <div>
+              <label for="swal-typeequipement" class="mb-1 block font-medium">Type d'équipement</label>
+              <select id="swal-typeequipement" class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+                ${optionsTypeEquipement}
+              </select>
+            </div>
+          </div>
+        `,
+        buttonsStyling: false,
+        customClass: {
+          popup: 'rounded-xl shadow-lg border border-gray-200 px-6 py-4',
+          confirmButton: 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer',
+          cancelButton: 'bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 cursor-pointer'
+        },
+        didRender: () => {
+          const actions = document.querySelector('.swal2-actions');
+          if (actions) {
+            actions.classList.add('flex', 'justify-between', 'w-full', 'gap-[50px]', 'mt-4');
+          }
+        },
+        showCancelButton: true,
+        focusConfirm: false,
+        confirmButtonText: '<i class="fi fi-rr-refresh"></i> Mettre à jour',
+        cancelButtonText: '<i class="fi fi-rr-time-delete"></i> Annuler',
+        preConfirm: () => {
+          return {
+            nom: document.getElementById('swal-nom').value,
+            marque: document.getElementById('swal-marque').value,
+            modele: document.getElementById('swal-modele').value,
+            numero_serie: document.getElementById('swal-numero').value,
+            date_acquisition: document.getElementById('swal-date').value,
+            etat: document.getElementById('swal-etat').value,
+            type_id: document.getElementById('swal-typeequipement').value
+          };
+        }
+      });
+
+      if (formValues) {
+        await equipementStore.updateEquipement(formValues, equipement.id);
+        await loadEquipements();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Mise à jour réussie',
+          text: 'Les informations ont été enregistrées.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    }
+
 
     async function deleteAllEquipements () {
       Swal.fire({
@@ -118,7 +368,8 @@
           }
       }).then(async (result) => {
           if (result.isConfirmed) {
-              equipements.value.data.forEach(async (equipement) => {
+              const deletedEquipements = ref(filteredEquipements)
+              deletedEquipements.value.forEach(async (equipement) => {
                 await equipementStore.deleteEquipement(equipement.id);
                 await loadEquipements();
               });
@@ -186,9 +437,62 @@
     }
 
 
+    function exportToExcel() {
+      const data = filteredEquipements.value.map((e) => ({
+        Nom: e.nom,
+        Marque: e.marque,
+        Modele: e.modele,
+        "Numéro de série": e.numero_serie,
+        "Date d'acquisition": e.date_acquisition,
+        Etat: e.etat,
+        "Type d'équipement": e.TypeEquipement?.libelle,
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Équipements");
+
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+
+      saveAs(blob, getTimestampedFilename("equipements", "xslx"));
+    }
+
+    function exportToCSV() {
+      const data = filteredEquipements.value.map((e) => ({
+        Nom: e.nom,
+        Marque: e.marque,
+        Modele: e.modele,
+        "Numéro de série": e.numero_serie,
+        "Date d'acquisition": e.date_acquisition,
+        Etat: e.etat,
+        "Type d'équipement": e.TypeEquipement?.libelle,
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const csv = XLSX.utils.sheet_to_csv(worksheet);
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      saveAs(blob, getTimestampedFilename("equipements", "csv"));
+    }
+
+    function getTimestampedFilename(baseName, extension) {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+
+      return `${baseName}_${yyyy}-${mm}-${dd}_${hh}-${min}-${ss}.${extension}`;
+    }
+
 
     onMounted(async () => {
-      await loadEquipements()
+      await loadEquipements();
+      await loadTypeEquipements()
     })
 
     async function loadEquipements () {
@@ -196,13 +500,34 @@
       equipements.value = equipementStore.equipements;
     }
 
+    async function loadTypeEquipements () {
+      await typeEquipementStore.getAllTypesEquipements();
+      typeEquipements.value = typeEquipementStore.typesEquipements;
+    }
+
     const filteredEquipements = computed(() => {
-      if (!search.value) return equipements.value.data;
-      return equipements.value.data.filter(equipement =>
-        equipement.nom?.toLowerCase().includes(search.value.toLowerCase()) ||
-        equipement.marque?.toLowerCase().includes(search.value.toLowerCase()) ||
-        equipement.modele?.toLowerCase().includes(search.value.toLowerCase()) ||
-        equipement.numero_serie?.toLowerCase().includes(search.value.toLowerCase())
-      );
+      if (!equipements.value?.data?.length) return []
+
+      return equipements.value.data.filter((e) => {
+        const s = search.value?.toLowerCase() || ''
+        const date = new Date(e.date_acquisition)
+
+        const matchesSearch =
+          e.nom?.toLowerCase().includes(s) ||
+          e.marque?.toLowerCase().includes(s) ||
+          e.modele?.toLowerCase().includes(s) ||
+          e.numero_serie?.toLowerCase().includes(s) ||
+          e.TypeEquipement?.libelle?.toLowerCase().includes(s)
+
+        const afterMin = !dateMin.value || date >= new Date(dateMin.value)
+        const beforeMax = !dateMax.value || date <= new Date(dateMax.value)
+
+        return matchesSearch && afterMin && beforeMax
+      })
     });
+
+    function resetDateFilter() {
+      dateMin.value = ''
+      dateMax.value = ''
+    }
 </script>

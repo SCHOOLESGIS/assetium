@@ -21,8 +21,8 @@
                             </div>
                         </div>
                         <div class="">
-                            <div class="text-md font-semibold">{{ user.nom }}</div>
-                            <small class="text-xs text-slate-400">{{ user.role }}</small>
+                            <div class="text-md font-semibold">{{ user?.nom }}</div>
+                            <small class="text-xs text-slate-400">{{ user?.role }}</small>
                         </div>
                     </div>
                 </div>
@@ -45,12 +45,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="p-1 rounded-full flex gap-4 items-center">
+                    <div class="p-1 rounded-full flex gap-4 items-center cursor-pointer hover:shadow-2xl duration-400 hover:outline outline-slate-400" @click="showProfilOptions()">
                         <div class="h-[50px] w-[50px] rounded-full bg-blue-500 flex items-center justify-center overflow-hidden" style="">
                             <div class="h-[45px] w-[45px] rounded-full bg-black flex items-center justify-center overflow-hidden border-2 border-white">
                                 <img src="../../public/me.png" alt="" class="w-full">
                             </div>
                         </div>
+                    </div>
+                    <div v-if="profilOptions" class="absolute w-[160px] top-[75px] right-4 bg-white h-[100px] rounded shadow-2xl p-2">
+                        <button @click="logout()" class="w-full border-b border-slate-300 py-2 duration-300 hover:bg-red-100 hover:text-red-500 rounded cursor-pointer flex items-center justify-center gap-1 px-1"><i class="fi fi-rr-leave"></i> <span>Se deconnecter</span></button>
+                        <button class="w-full border-b border-slate-300 py-2 duration-300 hover:bg-blue-100 hover:text-blue-500 rounded cursor-pointer flex items-center justify-center gap-1 px-1"><i class="fi fi-rr-user"></i> <span>Profil</span></button>
                     </div>
                 </div>
             </div>
@@ -64,10 +68,14 @@
 <script setup>
     import { ref, onMounted } from 'vue';
     import {useRouter} from 'vue-router';
+    import { useLoginStore } from '../utils/auth/login';
+    import Swal from 'sweetalert2';
+
+
     const router = useRouter();
-    const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
-    console.log('RDFGHTTTHTHYY'+ user);
+    const loginStore = useLoginStore()
+    const profilOptions = ref(false)
 
     const navigations = ref([
         {
@@ -122,12 +130,35 @@
         },
     ]);
 
+    function showProfilOptions() {
+        profilOptions.value = !profilOptions.value
+    }
+
     function navigateTo(url) {
         router.push(url);
     }
 
-    onMounted(() => {
+    async function logout () {
+        await loginStore.logout();
+        router.push({name: 'connexion'});
+        Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        }).fire({
+            icon: 'success',
+            title: 'Déconnexion réussie !'
+        });
+    }
 
+    onMounted(async () => {
+        await loginStore.getCurrentUser();
     })
 </script>
 

@@ -3,7 +3,7 @@
         <div class="text-3xl font-bold">Tableau de bord</div>
         <small class="mb-3 text-sm">Statistiques des activités du système.</small>
         <div class="w-full flex gap-3 flex-wrap mb-3 mt-3">
-            <div class="w-[300px] min-h-[100px] flex flex-wrap gap-3 grow">
+            <div class="w-[320px] min-h-[100px] flex flex-wrap gap-3 grow">
                 <div v-for="entity in entities" class="w-[200px] min-h-[125px] bg-white grow rounded shadow relative flex items-center p-3">
                     <div class="flex flex-col gap-4">
                         <div class="text-3xl font-bold">{{entity['number']}}</div>

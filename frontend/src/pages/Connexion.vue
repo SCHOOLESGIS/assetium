@@ -50,10 +50,10 @@
 
 <script setup>
     import { useLoginStore } from '../utils/auth/login';
-    import { ref } from "vue";
+    import { ref, onMounted } from "vue";
     import { useRouter } from "vue-router";
     import Swal from 'sweetalert2';
-
+    
     const router = useRouter();
 
     const email = ref('')
@@ -61,40 +61,73 @@
     const loginStore = useLoginStore()
 
     const onLogin = async () => {
-        const success = await loginStore.login({ email: email.value, password: password.value })
-        if (success) {
-            console.log("success "+ success)
-            router.push({name: 'dashboard'})
-            Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.onmouseenter = Swal.stopTimer;
-                    toast.onmouseleave = Swal.resumeTimer;
-                }
-            }).fire({
-                icon: 'success',
-                title: 'Connexion réussie !'
-            });
-        } else {
-            Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.onmouseenter = Swal.stopTimer;
-                    toast.onmouseleave = Swal.resumeTimer;
-                }
-            }).fire({
-                icon: 'warning',
-                title: 'Echec de la connexion !'
-            });
+        if (verifyInputs()) {
+            const success = await loginStore.login({ email: email.value, password: password.value })
+            if (success) {
+                router.push({name: 'dashboard'})
+                Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                }).fire({
+                    icon: 'success',
+                    title: 'Connexion réussie !'
+                });
+            } else {
+                Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                }).fire({
+                    icon: 'warning',
+                    title: 'Echec de la connexion !'
+                });
+            }
         }
+    }
+
+    function verifyInputs () {
+        if (!email.value) {
+            alert("L'email est requis !")
+            return false
+        }
+
+        if (!password.value) {
+            alert("Le mot de passe est requis !")
+            return false
+        }
+
+        return true
+    }
+
+    
+    function alert (message) {
+        Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        }).fire({
+            icon: 'warning',
+            title: message
+        });
     }
 </script>
 

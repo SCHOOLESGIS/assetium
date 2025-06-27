@@ -3,6 +3,15 @@ const router = express.Router();
 
 const { Utilisateur } = require('../models'); // ton modèle Sequelize
 
+
+router.get('/get-current-user', (req, res) => {
+  res.json(
+    {
+      "user": req.user
+    }
+  )
+});
+
 // GET tous les utilisateurs
 router.get('/', async (req, res) => {
   try {

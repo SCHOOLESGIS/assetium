@@ -1,7 +1,7 @@
 import axios from "axios";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-export const useEquipementStore = defineStore('counter', () => {
+export const useEquipementStore = defineStore('equipement', () => {
 
     const equipements = ref();
     const token = localStorage.getItem('token');
@@ -51,7 +51,7 @@ export const useEquipementStore = defineStore('counter', () => {
     }
 
     async function updateEquipement (equipement, id) {
-        equipements.value = await axios.post(
+        equipements.value = await axios.put(
             `${import.meta.env.VITE_API_URL}equipements/${id}`, 
             {
                 nom: equipement.nom,
